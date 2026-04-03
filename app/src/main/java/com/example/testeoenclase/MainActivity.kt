@@ -13,11 +13,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
     }
-    val btnConversion: Button = findViewById(R.id.btnConversion)
-    btnConversion.setOnClickListener {
-        val intent = Intent(this, ConversionActivity::class.java)
-        startActivity(intent)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +29,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupListeners() {
         binding.btnMostrar.setOnClickListener {
             startActivity(Intent(this, SegundaActividad::class.java))
+        }
+        binding.btnConversion.setOnClickListener {
+            val intent = Intent(this, ConversionActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -71,4 +70,3 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 }
-
