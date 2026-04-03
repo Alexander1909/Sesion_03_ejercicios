@@ -21,8 +21,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
+            <activity
+                android:name=".ConversionActivity"
+                android:label="Conversión de Monedas"
+                android:exported="false">
+                <intent-filter>
+                    <action android:name="com.example.testeoenclase.ConversionActivity"/>
+                    <category android:name="android.intent.category.DEFAULT"/>
+                </intent-filter>
+            </activity>
+
         </activity>
-        <activity android:name=".ConversionActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
