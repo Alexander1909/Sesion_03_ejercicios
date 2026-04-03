@@ -2,49 +2,80 @@ package com.example.testeoenclase
 
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
+import android.os.Looper
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
 class ConversionActivity : AppCompatActivity() {
 
+    companion object {
+        const val TIMER_RUNTIME = 3000L   // 3 segundos de "carga"
+    }
+
+    private lateinit var etAmount: EditText
+    private lateinit var spinnerCurrency: Spinner
+    private lateinit var tvResult: TextView
     private lateinit var progressBar: ProgressBar
-    private var progreso = 0
+
+    // Tasas de cambio respecto al USD (valores de referencia)
+    private val rates = mapOf(
+        "EUR" to 0.92, "PEN" to 3.74, "GBP" to 0.79,
+        "JPY" to 157.5, "BRL" to 5.05
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversion)
-        val etMonto = findViewById<EditText>(R.id.etMonto)
-        val btnConvertir = findViewById<Button>(R.id.btnConvertir)
-        val tvResultado = findViewById<TextView>(R.id.tvResultado)
-        progressBar = findViewById(R.id.progressBar)
 
-        btnConvertir.setOnClickListener {
-            val monto = etMonto.text.toString().toDoubleOrNull()
+        etAmount       = findViewById(R.id.etAmount)
+        spinnerCurrency = findViewById(R.id.spinnerCurrency)
+        tvResult       = findViewById(R.id.tvResult)
+        progressBar    = findViewById(R.id.progressBarConv)
 
-            if (monto != null) {
-                val resultado = monto * 0.27  // Ejemplo Soles a USD
-                tvResultado.text = "USD: $resultado"
-                iniciarCarga()
-            } else {
-                Toast.makeText(this, "Ingrese un valor válido", Toast.LENGTH_SHORT).show()
-            }
-        }
+        val currencies = rates.keys.toList()
+        val adapter = ArrayAdapter(this,
+            android.R.layout.simple_spinner_item, currencies)
+        adapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item)
+        spinnerCurrency.adapter = adapter
     }
 
-    private fun iniciarCarga() {
-        progreso = 0
-        val handler = Handler()
+    fun onConvertir(view: View) {
+        val amountStr = etAmount.text.toString()
+        if (amountStr.isEmpty()) {
+            Toast.makeText(this, "Ingrese un monto", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val amount = amountStr.toDouble()
+        val currency = spinnerCurrency.selectedItem.toString()
+        val rate = rates[currency] ?: 1.0
 
-        Thread {
-            while (progreso < 100) {
-                progreso += 10
-                Thread.sleep(200)
+        // Mostrar ProgressBar y simular carga
+        progressBar.visibility = View.VISIBLE
+        progressBar.progress = 0
 
-                handler.post {
-                    progressBar.progress = progreso
+        var elapsed = 0
+        val handler = Handler(Looper.getMainLooper())
+        val step = 200L
+
+        val runnable = object : Runnable {
+            override fun run() {
+                elapsed += step.toInt()
+                val progress = (progressBar.max * elapsed / TIMER_RUNTIME).toInt()
+                progressBar.progress = progress
+                if (elapsed < TIMER_RUNTIME) {
+                    handler.postDelayed(this, step)
+                } else {
+                    progressBar.progress = progressBar.max
+                    val result = amount * rate
+                    tvResult.text = String.format(
+                        "%.2f USD = %.2f %s", amount, result, currency)
+                    Toast.makeText(applicationContext,
+                        "Carga completa", Toast.LENGTH_SHORT).show()
                 }
             }
-            Log.d("Carga", "Carga completa")
-        }.start()
+        }
+        handler.post(runnable)
     }
 }
